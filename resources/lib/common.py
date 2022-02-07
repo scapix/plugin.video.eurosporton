@@ -52,9 +52,9 @@ def build_list(type, video, listing, response):
             av_start_local = av_start.astimezone(tz.tzlocal())
             channel = attrs.get('path')
             if 'eurosport-1' in channel:
-                title = 'Eurosport 1: ' + attrs.get('name')
+                title = 'Eurosport 1: ' + attrs.get('name') + ' (' + attrs.get('secondaryTitle') +')'
             if 'eurosport-2' in channel:
-                title = 'Eurosport 2: ' + attrs.get('name')
+                title = 'Eurosport 2: ' + attrs.get('name') + ' (' + attrs.get('secondaryTitle') +')'
             
         else:
             # Set the base title
@@ -103,9 +103,23 @@ def build_list(type, video, listing, response):
             timestamp = attrs.get('publishStart')
         
         # Get the plot
-        plot = attrs.get('description')
-        if plot == '' or plot is None:
-            plot = attrs.get('secondaryTitle')
+        txCompetitions = ""
+        txEvents = ""
+        txLegs = ""
+        tax = video.get('relationships',{}).get('txCompetitions', {}).get('data',[])
+        if tax:
+            txCompetitions = response.get_taxonomy(tax[0]['id'])
+        tax = video.get('relationships',{}).get('txEvents', {}).get('data',[])
+        if tax:
+            txEvents = response.get_taxonomy(tax[0]['id'])
+        tax = video.get('relationships',{}).get('txLegs', {}).get('data',[])
+        if tax:
+            txLegs = response.get_taxonomy(tax[0]['id'])            
+        desc = attrs.get('description')
+        if desc == '' or desc is None:
+            plot = "{} {}\n{}".format(txCompetitions,txEvents,txLegs)
+        else:
+            plot = "{} {}\n{}\n{}".format(txCompetitions,txEvents,txLegs,desc)
 
         # Set the metadata
         if type == 'ondemand':

@@ -1,5 +1,6 @@
 import datetime
 import requests
+import xbmc
 
 from dateutil.parser import parse as parse_date
 from dateutil import tz
@@ -89,13 +90,56 @@ class Eurosport(object):
             ).json()
         )
 
+
+
+"""
+    Basic response class
+"""    
+class OnResponse(object):
+    def __init__(self, data):
+        self._data = data
+
+    def images(self):
+        return filter(
+            lambda o: o.get('type') == 'image',
+            self._data.get('included', [])
+        )
+
+    def get_image_url(self, id):
+        wanted_images = list(
+            filter(
+                lambda i: i['id'] == id,
+                self.images()
+            )
+        )
+        if len(wanted_images) > 0:
+            return wanted_images[0]['attributes'].get('src')
+        return None
+
+    def taxonomy(self):
+        return filter(
+            lambda o: o.get('type') == 'taxonomyNode',
+            self._data.get('included', [])
+        )
+
+    def get_taxonomy(self, id):
+        wanted_taxonomies = list(
+            filter(
+                lambda i: i['id'] == id,
+                self.taxonomy()
+            )
+        )
+        if len(wanted_taxonomies) > 0:
+            return wanted_taxonomies[0]['attributes'].get('name')
+        return None
+
+
+
 """
     OntvResponse sends back a list of videos that have a start time before now and
     and end time after now
 """    
-class OntvResponse(object):
-    def __init__(self, data):
-        self._data = data
+class OntvResponse(OnResponse):
 
     def videos(self, onlyAvailable=True):
 
@@ -127,13 +171,12 @@ class OntvResponse(object):
             self._data.get('included', [])
         )
 
-        
+
+
 """
     OnscheduleResponse sends back an object containing an id and an array of dates inthe current schedule
 """
-class OnscheduleResponse(object):
-    def __init__(self, data):
-        self._data = data
+class OnscheduleResponse(OnResponse):
 
     def scheduleCollection(self, onlyAvailable=True):
 
@@ -150,31 +193,12 @@ class OnscheduleResponse(object):
             self._data.get('included', [])
         )
 
-    def images(self):
-        return filter(
-            lambda o: o.get('type') == 'image',
-            self._data.get('included', [])
-        )
 
-    def get_image_url(self, id):
-        wanted_images = list(
-            filter(
-                lambda i: i['id'] == id,
-                self.images()
-            )
-        )
-        if len(wanted_images) > 0:
-            return wanted_images[0]['attributes'].get('src')
-        return None
-
-        
         
 """
     OndemandResponse sends back a list of sports that have videos available
 """
-class OndemandResponse(object):
-    def __init__(self, data):
-        self._data = data
+class OndemandResponse(OnResponse):
 
     def sports(self, onlyAvailable=True):
 
@@ -192,32 +216,13 @@ class OndemandResponse(object):
             self._data.get('included', [])
         )
 
-    def images(self):
-        return filter(
-            lambda o: o.get('type') == 'image',
-            self._data.get('included', [])
-        )
-
-    def get_image_url(self, id):
-        wanted_images = list(
-            filter(
-                lambda i: i['id'] == id,
-                self.images()
-            )
-        )
-        if len(wanted_images) > 0:
-            return wanted_images[0]['attributes'].get('src')
-        return None
-
 
 
 """
     SportResponse sends back a list of on demand videos that have a start time before now and
     and end time after now
 """    
-class SportResponse(object):
-    def __init__(self, data):
-        self._data = data
+class SportResponse(OnResponse):
 
     def videos(self, onlyAvailable=True):
 
@@ -243,30 +248,12 @@ class SportResponse(object):
             self._data.get('included', [])
         )
 
-    def images(self):
-        return filter(
-            lambda o: o.get('type') == 'image',
-            self._data.get('included', [])
-        )
-
-    def get_image_url(self, id):
-        wanted_images = list(
-            filter(
-                lambda i: i['id'] == id,
-                self.images()
-            )
-        )
-        if len(wanted_images) > 0:
-            return wanted_images[0]['attributes'].get('src')
-        return None
 
 
 """
     DailyResponse sends back a list of videos that are showing on the selected day
 """    
-class DailyResponse(object):
-    def __init__(self, data):
-        self._data = data
+class DailyResponse(OnResponse):
 
     def videos(self, onlyAvailable=True):
 
@@ -284,20 +271,4 @@ class DailyResponse(object):
             self._data.get('included', [])
         )
 
-    def images(self):
-        return filter(
-            lambda o: o.get('type') == 'image',
-            self._data.get('included', [])
-        )
-
-    def get_image_url(self, id):
-        wanted_images = list(
-            filter(
-                lambda i: i['id'] == id,
-                self.images()
-            )
-        )
-        if len(wanted_images) > 0:
-            return wanted_images[0]['attributes'].get('src')
-        return None
 
